@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>💜 Día de la Mujer</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Cormorant+Garamond:ital,wght@0,300;0,600;1,300&family=Sacramento&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --rose: #e8556d;
+    --purple: #9b4dca;
+    --gold: #f0c040;
+    --lavender: #c4a0e8;
+    --cream: #fdf6f0;
+    --deep: #1a0a2e;
+    --pink-soft: #f7c5d5;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html, body {
+    width: 100%; height: 100%;
+    overflow: hidden;
+    background: var(--deep);
+    font-family: 'Cormorant Garamond', serif;
+  }
+
+  /* ===== CANVAS DE PARTÍCULAS ===== */
+  #canvas {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+  }
+
+  /* ===== PANTALLA DE INICIO ===== */
+  #screen-intro {
+    position: fixed;
+    inset: 0;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: radial-gradient(ellipse at 50% 30%, #3a0d5e 0%, #1a0a2e 60%, #0d0518 100%);
+    transition: opacity 0.8s ease, transform 0.8s ease;
+  }
+
+  #screen-intro.hidden {
+    opacity: 0;
+    transform: scale(1.05);
+    pointer-events: none;
+  }
+
+  .intro-badge {
+    font-family: 'Sacramento', cursive;
+    font-size: clamp(1.2rem, 4vw, 1.8rem);
+    color: var(--gold);
+    letter-spacing: 0.05em;
+    margin-bottom: 0.5rem;
+    animation: fadeSlideDown 1s ease forwards;
+    opacity: 0;
+    animation-delay: 0.2s;
+  }
+
+  .intro-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2.5rem, 10vw, 5.5rem);
+    font-weight: 700;
+    line-height: 1;
+    text-align: center;
+    background: linear-gradient(135deg, #f7c5d5, #e8556d, #c4a0e8, #9b4dca);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: fadeSlideDown 1s ease forwards;
+    opacity: 0;
+    animation-delay: 0.5s;
+    padding: 0 1rem;
+  }
+
+  .intro-date {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: clamp(1rem, 3vw, 1.4rem);
+    color: var(--lavender);
+    margin-top: 0.75rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    animation: fadeSlideDown 1s ease forwards;
+    opacity: 0;
+    animation-delay: 0.8s;
+  }
+
+  .intro-divider {
+    width: 120px;
+    height: 2px;
+    background: linear-gradient(to right, transparent, var(--rose), var(--purple), transparent);
+    margin: 2rem auto;
+    animation: fadeSlideDown 1s ease forwards;
+    opacity: 0;
+    animation-delay: 1s;
+  }
+
+  .intro-question {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(1.1rem, 3.5vw, 1.5rem);
+    color: var(--cream);
+    text-align: center;
+    margin-bottom: 1.5rem;
+    font-style: italic;
+    animation: fadeSlideDown 1s ease forwards;
+    opacity: 0;
+    animation-delay: 1.2s;
+    padding: 0 1.5rem;
+  }
+
+  .input-wrap {
+    position: relative;
+    width: min(360px, 85vw);
+    animation: fadeSlideDown 1s ease forwards;
+    opacity: 0;
+    animation-delay: 1.5s;
+  }
+
+  #nombre-input {
+    width: 100%;
+    padding: 1rem 1.5rem;
+    font-family: 'Playfair Display', serif;
+    font-size: 1.2rem;
+    color: var(--cream);
+    background: rgba(255,255,255,0.07);
+    border: 2px solid rgba(196,160,232,0.4);
+    border-radius: 50px;
+    outline: none;
+    text-align: center;
+    letter-spacing: 0.05em;
+    transition: border-color 0.3s, box-shadow 0.3s;
+    backdrop-filter: blur(10px);
+  }
+
+  #nombre-input::placeholder { color: rgba(253,246,240,0.35); }
+
+  #nombre-input:focus {
+    border-color: var(--lavender);
+    box-shadow: 0 0 0 4px rgba(196,160,232,0.15), 0 0 30px rgba(155,77,202,0.2);
+  }
+
+  .btn-celebrar {
+    display: block;
+    margin: 1.5rem auto 0;
+    padding: 0.9rem 3rem;
+    font-family: 'Playfair Display', serif;
+    font-size: 1.1rem;
+    font-style: italic;
+    color: white;
+    background: linear-gradient(135deg, var(--rose), var(--purple));
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    letter-spacing: 0.08em;
+    transition: transform 0.2s, box-shadow 0.3s;
+    box-shadow: 0 4px 20px rgba(232,85,109,0.4);
+    animation: fadeSlideDown 1s ease forwards;
+    opacity: 0;
+    animation-delay: 1.7s;
+  }
+
+  .btn-celebrar:hover {
+    transform: translateY(-3px) scale(1.03);
+    box-shadow: 0 8px 30px rgba(155,77,202,0.5);
+  }
+
+  .btn-celebrar:active { transform: scale(0.97); }
+
+  /* ===== PANTALLA DE CELEBRACIÓN ===== */
+  #screen-celebracion {
+    position: fixed;
+    inset: 0;
+    z-index: 5;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.8s ease;
+    background: radial-gradient(ellipse at 40% 20%, #4a1575 0%, #1a0a2e 50%, #0d0518 100%);
+  }
+
+  #screen-celebracion.visible {
+    opacity: 1;
+    pointer-events: all;
+  }
+
+  .cel-top-badge {
+    font-family: 'Sacramento', cursive;
+    font-size: clamp(1.5rem, 5vw, 2.5rem);
+    color: var(--gold);
+    animation: celFadeIn 0.8s ease forwards;
+    opacity: 0;
+    animation-delay: 0.3s;
+  }
+
+  .cel-nombre {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2rem, 10vw, 5rem);
+    font-weight: 700;
+    font-style: italic;
+    text-align: center;
+    line-height: 1.15;
+    background: linear-gradient(135deg, #fff 0%, var(--pink-soft) 40%, var(--lavender) 80%, var(--gold) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: celNamePop 1s cubic-bezier(0.34,1.56,0.64,1) forwards;
+    opacity: 0;
+    animation-delay: 0.6s;
+    padding: 0.1em 1.5rem;
+    text-shadow: none;
+    width: 100%;
+    max-width: 90vw;
+    word-break: break-word;
+    overflow-wrap: break-word;
+  }
+
+  .cel-mensaje {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(1rem, 3.5vw, 1.5rem);
+    color: rgba(253,246,240,0.85);
+    text-align: center;
+    max-width: 600px;
+    line-height: 1.7;
+    font-style: italic;
+    padding: 0 2rem;
+    animation: celFadeIn 1s ease forwards;
+    opacity: 0;
+    animation-delay: 1.2s;
+    margin-top: 1rem;
+  }
+
+  .cel-firma {
+    font-family: 'Sacramento', cursive;
+    font-size: clamp(1.3rem, 4vw, 2rem);
+    color: var(--rose);
+    margin-top: 2rem;
+    animation: celFadeIn 1s ease forwards;
+    opacity: 0;
+    animation-delay: 1.8s;
+  }
+
+  .symbols-row {
+    font-size: clamp(1.5rem, 5vw, 2.5rem);
+    letter-spacing: 0.5rem;
+    margin: 1.2rem 0 0;
+    animation: celFadeIn 1s ease forwards;
+    opacity: 0;
+    animation-delay: 2.1s;
+  }
+
+  .btn-reiniciar {
+    margin-top: 2.5rem;
+    padding: 0.75rem 2.5rem;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1rem;
+    font-style: italic;
+    color: var(--lavender);
+    background: transparent;
+    border: 1.5px solid rgba(196,160,232,0.5);
+    border-radius: 50px;
+    cursor: pointer;
+    letter-spacing: 0.1em;
+    transition: all 0.3s;
+    animation: celFadeIn 1s ease forwards;
+    opacity: 0;
+    animation-delay: 2.5s;
+  }
+
+  .btn-reiniciar:hover {
+    color: white;
+    border-color: var(--lavender);
+    background: rgba(196,160,232,0.1);
+    transform: translateY(-2px);
+  }
+
+  /* ===== FLORES FLOTANTES ===== */
+  .flower {
+    position: fixed;
+    font-size: 1.5rem;
+    pointer-events: none;
+    z-index: 3;
+    opacity: 0;
+    animation: flowerFloat linear infinite;
+  }
+
+  /* ===== ANILLO ORBITAL ===== */
+  .orbit-ring {
+    position: fixed;
+    inset: 0;
+    z-index: 2;
+    pointer-events: none;
+    overflow: hidden;
+  }
+
+  .orbit-ring svg {
+    width: 100%; height: 100%;
+    opacity: 0.12;
+  }
+
+  /* ===== ONDAS DE ENERGÍA ===== */
+  .wave-bg {
+    position: fixed;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    overflow: hidden;
+  }
+
+  .wave {
+    position: absolute;
+    border-radius: 50%;
+    border: 1px solid rgba(196,160,232,0.2);
+    transform: translate(-50%, -50%);
+    animation: waveExpand ease-out infinite;
+  }
+
+  /* ===== ANIMACIONES ===== */
+  @keyframes fadeSlideDown {
+    from { opacity: 0; transform: translateY(-20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes celFadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes celNamePop {
+    from { opacity: 0; transform: scale(0.6) translateY(30px); }
+    to   { opacity: 1; transform: scale(1) translateY(0); }
+  }
+
+  @keyframes flowerFloat {
+    0%   { opacity: 0; transform: translateY(110vh) rotate(0deg); }
+    5%   { opacity: 0.9; }
+    90%  { opacity: 0.7; }
+    100% { opacity: 0; transform: translateY(-15vh) rotate(720deg); }
+  }
+
+  @keyframes waveExpand {
+    0%   { width: 0; height: 0; opacity: 0.5; }
+    100% { width: 200vmax; height: 200vmax; opacity: 0; }
+  }
+
+  @keyframes shimmer {
+    0%   { background-position: -200% center; }
+    100% { background-position: 200% center; }
+  }
+
+  /* ===== RIBBON LATERAL ===== */
+  .ribbon {
+    position: fixed;
+    left: 0; top: 0;
+    width: 6px;
+    height: 100%;
+    background: linear-gradient(to bottom, var(--rose), var(--purple), var(--lavender), var(--rose));
+    z-index: 20;
+    opacity: 0.7;
+  }
+
+  .ribbon-r {
+    left: auto; right: 0;
+    background: linear-gradient(to bottom, var(--lavender), var(--rose), var(--purple), var(--lavender));
+  }
+
+  /* ===== GLOW CENTRAL ===== */
+  .glow-center {
+    position: fixed;
+    left: 50%; top: 50%;
+    transform: translate(-50%, -50%);
+    width: 60vw; height: 60vw;
+    max-width: 500px; max-height: 500px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(155,77,202,0.15) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 1;
+    animation: glowPulse 3s ease-in-out infinite;
+  }
+
+  @keyframes glowPulse {
+    0%, 100% { transform: translate(-50%,-50%) scale(1); opacity: 0.7; }
+    50%       { transform: translate(-50%,-50%) scale(1.15); opacity: 1; }
+  }
+
+  /* RIBBON ANIMADO TOP/BOT */
+  .top-strip {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--rose), var(--purple), var(--lavender), var(--gold), var(--rose));
+    background-size: 300% 100%;
+    animation: shimmer 4s linear infinite;
+    z-index: 30;
+  }
+  .bot-strip {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--gold), var(--lavender), var(--purple), var(--rose), var(--gold));
+    background-size: 300% 100%;
+    animation: shimmer 4s linear infinite reverse;
+    z-index: 30;
+  }
+</style>
+</head>
+<body>
+
+<!-- Decoraciones globales -->
+<div class="top-strip"></div>
+<div class="bot-strip"></div>
+<div class="ribbon"></div>
+<div class="ribbon ribbon-r"></div>
+<div class="glow-center"></div>
+
+<!-- Fondo de ondas -->
+<div class="wave-bg" id="wave-bg"></div>
+
+<!-- Canvas partículas -->
+<canvas id="canvas"></canvas>
+
+<!-- ===== PANTALLA INTRO ===== -->
+<div id="screen-intro">
+  <div class="intro-badge">8 de marzo</div>
+  <h1 class="intro-title">Día<br>Internacional<br>de la Mujer</h1>
+  <div class="intro-date">♀ 2025 · Celebración especial ♀</div>
+  <div class="intro-divider"></div>
+  <p class="intro-question">¿Cuál es tu nombre, mujer maravillosa?</p>
+  <div class="input-wrap">
+    <input type="text" id="nombre-input" placeholder="Escribe tu nombre aquí..." maxlength="30" autocomplete="off" />
+  </div>
+  <button class="btn-celebrar" onclick="celebrar()">✨ Celebrarte ✨</button>
+</div>
+
+<!-- ===== PANTALLA CELEBRACIÓN ===== -->
+<div id="screen-celebracion">
+  <div class="cel-top-badge">¡Feliz Día,</div>
+  <div class="cel-nombre" id="cel-nombre-display">Nombre</div>
+  <div class="symbols-row">🌹 💜 ✊ 🌸 ⭐</div>
+  <div class="cel-mensaje" id="cel-mensaje"></div>
+  <div class="cel-firma">Con admiración y amor 💜</div>
+  <button class="btn-reiniciar" onclick="reiniciar()">↩ Volver a inicio</button>
+</div>
+
+<script>
+// ===== MENSAJES ALEATORIOS =====
+const mensajes = [
+  "Hoy el mundo te celebra, pero mereces ser celebrada cada día. Tu fortaleza, tu amor y tu luz son el motor de este mundo. ¡Gracias por existir!",
+  "Eres historia que se escribe con valentía, poesía que el universo recita con orgullo. Hoy y siempre, tu lucha transforma el mundo.",
+  "No es solo un día, es el reconocimiento eterno de que las mujeres mueven montañas, crean vida y cambian el destino del mundo. ¡Tú eres esa mujer!",
+  "En cada rincón del planeta, mujeres como tú inspiran con su coraje y ternura. Tu existencia es un acto de revolución y de amor.",
+  "Que este día te recuerde que eres extraordinaria: tu voz importa, tu historia vale, tu futuro brilla con luz propia.",
+  "Cada mujer es un universo entero. Hoy celebramos el tuyo: infinito, poderoso y lleno de magia.",
+  "Tu camino ha sido trazado con determinación y gracia. Hoy el mundo se detiene un momento para agradecerte por todo lo que eres.",
+];
+
+// ===== PARTÍCULAS =====
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+let particles = [];
+let animFrame;
+let celebrando = false;
+
+function resizeCanvas() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+resizeCanvas();
+window.addEventListener('resize', resizeCanvas);
+
+function createParticle(x, y, burst = false) {
+  const colors = ['#e8556d','#9b4dca','#c4a0e8','#f0c040','#f7c5d5','#fff'];
+  return {
+    x: x ?? Math.random() * canvas.width,
+    y: y ?? Math.random() * canvas.height,
+    r: burst ? Math.random() * 4 + 2 : Math.random() * 2.5 + 0.5,
+    color: colors[Math.floor(Math.random() * colors.length)],
+    vx: burst ? (Math.random() - 0.5) * 8 : (Math.random() - 0.5) * 0.4,
+    vy: burst ? (Math.random() - 0.8) * 8 : -Math.random() * 0.6 - 0.1,
+    alpha: 1,
+    decay: burst ? Math.random() * 0.012 + 0.005 : Math.random() * 0.003 + 0.001,
+    gravity: burst ? 0.12 : 0,
+  };
+}
+
+function initParticles() {
+  particles = [];
+  for (let i = 0; i < 80; i++) {
+    const p = createParticle();
+    p.alpha = Math.random();
+    particles.push(p);
+  }
+}
+
+function burst(x, y, count = 40) {
+  for (let i = 0; i < count; i++) particles.push(createParticle(x, y, true));
+}
+
+function animateParticles() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  particles = particles.filter(p => p.alpha > 0.01);
+
+  if (!celebrando && particles.length < 100) {
+    particles.push(createParticle());
+  }
+
+  for (const p of particles) {
+    ctx.save();
+    ctx.globalAlpha = p.alpha;
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+    ctx.fillStyle = p.color;
+    ctx.shadowColor = p.color;
+    ctx.shadowBlur = 8;
+    ctx.fill();
+    ctx.restore();
+
+    p.x += p.vx;
+    p.y += p.vy;
+    p.vy += p.gravity;
+    p.alpha -= p.decay;
+  }
+  animFrame = requestAnimationFrame(animateParticles);
+}
+initParticles();
+animateParticles();
+
+// ===== ONDAS DE FONDO =====
+function createWaves() {
+  const bg = document.getElementById('wave-bg');
+  const cx = window.innerWidth / 2;
+  const cy = window.innerHeight / 2;
+  for (let i = 0; i < 5; i++) {
+    const w = document.createElement('div');
+    w.className = 'wave';
+    w.style.left = cx + 'px';
+    w.style.top = cy + 'px';
+    w.style.animationDuration = (6 + i * 2) + 's';
+    w.style.animationDelay = (i * 1.5) + 's';
+    bg.appendChild(w);
+  }
+}
+createWaves();
+
+// ===== FLORES FLOTANTES =====
+const emojisFlores = ['🌸','🌺','🌹','💐','🌷','✨','💜','⭐','🦋'];
+let floresInterval;
+
+function createFlor() {
+  const el = document.createElement('div');
+  el.className = 'flower';
+  el.textContent = emojisFlores[Math.floor(Math.random() * emojisFlores.length)];
+  el.style.left = Math.random() * 95 + 'vw';
+  el.style.fontSize = (1.2 + Math.random() * 1.5) + 'rem';
+  const dur = 6 + Math.random() * 7;
+  el.style.animationDuration = dur + 's';
+  el.style.animationDelay = Math.random() * 2 + 's';
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), (dur + 2) * 1000);
+}
+
+function startFlores() {
+  floresInterval = setInterval(createFlor, 600);
+  for (let i = 0; i < 10; i++) setTimeout(createFlor, i * 200);
+}
+
+function stopFlores() {
+  clearInterval(floresInterval);
+}
+
+// ===== LÓGICA PRINCIPAL =====
+function celebrar() {
+  const input = document.getElementById('nombre-input');
+  const nombre = input.value.trim();
+  if (!nombre) {
+    input.style.borderColor = 'var(--rose)';
+    input.style.boxShadow = '0 0 0 4px rgba(232,85,109,0.2)';
+    input.placeholder = '✨ ¡Por favor escribe tu nombre!';
+    setTimeout(() => {
+      input.style.borderColor = '';
+      input.style.boxShadow = '';
+      input.placeholder = 'Escribe tu nombre aquí...';
+    }, 2000);
+    return;
+  }
+
+  celebrando = true;
+
+  // Burst en el centro
+  burst(window.innerWidth / 2, window.innerHeight / 2, 60);
+  setTimeout(() => burst(window.innerWidth * 0.3, window.innerHeight * 0.4, 30), 300);
+  setTimeout(() => burst(window.innerWidth * 0.7, window.innerHeight * 0.6, 30), 600);
+
+  // Actualizar contenido con tamaño dinámico según largo del nombre
+  const nombreEl = document.getElementById('cel-nombre-display');
+  nombreEl.textContent = nombre + '!';
+  const len = nombre.length;
+  if (len <= 6)       nombreEl.style.fontSize = 'clamp(2.5rem, 13vw, 5.5rem)';
+  else if (len <= 10) nombreEl.style.fontSize = 'clamp(2rem, 10vw, 4.5rem)';
+  else if (len <= 15) nombreEl.style.fontSize = 'clamp(1.6rem, 7vw, 3.5rem)';
+  else                nombreEl.style.fontSize = 'clamp(1.3rem, 5.5vw, 2.8rem)';
+  const msg = mensajes[Math.floor(Math.random() * mensajes.length)];
+  document.getElementById('cel-mensaje').textContent = msg;
+
+  // Transición de pantalla
+  document.getElementById('screen-intro').classList.add('hidden');
+  setTimeout(() => {
+    document.getElementById('screen-celebracion').classList.add('visible');
+    startFlores();
+    // Más bursts después de revelar
+    setTimeout(() => {
+      burst(window.innerWidth * 0.2, window.innerHeight * 0.2, 20);
+      burst(window.innerWidth * 0.8, window.innerHeight * 0.8, 20);
+    }, 500);
+  }, 800);
+}
+
+function reiniciar() {
+  celebrando = false;
+  stopFlores();
+
+  document.getElementById('screen-celebracion').classList.remove('visible');
+
+  setTimeout(() => {
+    document.getElementById('screen-intro').classList.remove('hidden');
+    document.getElementById('nombre-input').value = '';
+    initParticles();
+  }, 800);
+}
+
+// Enter key
+document.getElementById('nombre-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') celebrar();
+});
+
+// Tap para bursts en celebración
+document.getElementById('screen-celebracion').addEventListener('click', e => {
+  burst(e.clientX, e.clientY, 25);
+});
+</script>
+</body>
+</html>
